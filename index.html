@@ -6,7 +6,11 @@
 <title>Seatravel · Booking check</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script type="module">
+  import { readBarcodes, prepareZXingModule } from "https://unpkg.com/zxing-wasm@2.1.2/dist/reader/index.js";
+  prepareZXingModule({ fireImmediately: true });
+  window.zxRead = (img) => readBarcodes(img, { formats: ["QRCode","Code128","DataMatrix","PDF417","Aztec"], tryHarder: true, tryRotate: true, maxNumberOfSymbols: 1 });
+</script>
 <style>
   :root{
     --sea:#0B2A3F; --deep:#071C2B; --foam:#F2F6F8; --mist:#C9D6DE; --rope:#8FA3B0;
@@ -47,6 +51,8 @@
   .btn-flag:active{transform:translateY(1px)}
   .scan .stop{position:absolute;top:10px;right:10px;background:rgba(7,28,43,.75);color:var(--foam);font-size:12px;font-weight:600;padding:7px 11px;border-radius:999px;display:none}
   .scan.live .stop{display:block}
+  .scan .hint{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:var(--mist);background:rgba(7,28,43,.6);padding:6px;display:none}
+  .scan.live .hint{display:block}
 
   /* manual */
   .manual{padding:14px 18px 0}
@@ -123,6 +129,7 @@
       <button class="btn-flag" id="startScan">Start camera</button>
     </div>
     <button class="stop" id="stopScan">Stop camera</button>
+    <div class="hint" id="scanHint"><span id="engine"></span> · hold barcode flat, 10–15 cm away, fill the width</div>
   </section>
 
   <section class="manual">
@@ -268,9 +275,16 @@ function render(){
 }
 
 /* ================= check ================= */
+function lev1(a,b){ // true if edit distance ≤ 1
+  if(a===b)return true; if(Math.abs(a.length-b.length)>1)return false;
+  let i=0,j=0,d=0; while(i<a.length&&j<b.length){ if(a[i]===b[j]){i++;j++;continue;} if(++d>1)return false; if(a.length>b.length)i++; else if(a.length<b.length)j++; else {i++;j++;} }
+  return d+(a.length-i)+(b.length-j)<=1;
+}
+function nearest(code){ if(code.length<6)return''; const hits=Object.keys(index).filter(k=>lev1(k,code)); return hits.length===1?hits[0]:''; }
 function check(raw){
   const codes=codesIn(raw); const code=codes[0]||normCode(raw);
-  const b=codes.map(c=>index[c]).find(Boolean)||index[code];
+  let b=codes.map(c=>index[c]).find(Boolean)||index[code], near='';
+  if(!b){ const m=nearest(code); if(m){ b=index[m]; near=m; } }
   const v=$('verdict'), card=$('vCard'); let cls,word,who;
   $('vCode').textContent=b?b.codes.join(' · '):code;
   $('vChan').textContent=b?b.channel:(channelGuess(code)||'Unknown channel');
@@ -278,6 +292,7 @@ function check(raw){
     $('vName').textContent=b.name||(b.channel+' guest'); $('vGrid').style.display='grid';
     $('vDate').textContent=b.date?b.date.slice(5).replace('-','/'):'—'; $('vTime').textContent=b.time||'—'; $('vPax').textContent=b.pax||'—';
     if(b.cancelled){cls='no';word='Cancelled';who='cancelled';$('vNote').textContent='This booking was cancelled. Do not board without a new booking.';}
+    else if(near){cls='warn';word='Check';who=b.name+' ?';$('vNote').textContent=`No exact match for ${code}. Closest booking is ${near} (${b.date} ${b.time}) — compare with the ticket before boarding.`;}
     else if(b.date===today){cls='ok';word='Board';who=b.name;$('vNote').textContent=`${b.tour}. ${b.pax===1?'1 guest':b.pax+' guests'} on this booking.`;}
     else {cls='warn';word='Check';who=b.name+' · '+b.date.slice(5);$('vNote').textContent=`Booked for ${b.date} at ${b.time}, not today. Confirm with the guest before boarding.`;}
   } else {
@@ -296,33 +311,47 @@ const closeVerdict=()=>{$('verdict').classList.remove('show');};
 $('vClose').onclick=closeVerdict; $('vNext').onclick=()=>{closeVerdict(); if(!scanning)$('manual').focus();};
 
 /* ================= camera: QR + 1D barcodes (Code 128/39, EAN, ITF, DataMatrix, PDF417) ================= */
-let scanning=false,stream=null,lastCode='',lastAt=0,detector=null,zx=null;
+let scanning=false,stream=null,lastCode='',lastAt=0,detector=null;
 const video=$('video');
-const FORMATS=['qr_code','code_128','code_39','ean_13','ean_8','itf','data_matrix','pdf417','aztec'];
-function onHit(text){ const now=Date.now(); if(!text||(text===lastCode&&now-lastAt<4000))return; lastCode=text; lastAt=now; if(!$('verdict').classList.contains('show'))check(text); }
+const FORMATS=['qr_code','code_128','data_matrix','pdf417','aztec']; // no EAN/ITF/Code39: they false-positive on Code 128 tickets
+let pending='',pendingN=0;
+function onHit(text){
+  if(!text)return; const now=Date.now();
+  // accept immediately if it looks like one of our codes; otherwise require the same read 3 times in a row
+  if(!codesIn(text).length){ if(text===pending)pendingN++; else {pending=text;pendingN=1;} if(pendingN<3)return; }
+  pending='';pendingN=0;
+  if(text===lastCode&&now-lastAt<4000)return; lastCode=text; lastAt=now;
+  if(!$('verdict').classList.contains('show'))check(text);
+}
 async function startScan(){
   try{
     scanning=true; $('scanBox').classList.add('live'); $('scanIdle').style.display='none';
-    if('BarcodeDetector' in window){                      // native (Chrome/Android, newer Safari)
-      const sup=await BarcodeDetector.getSupportedFormats();
-      detector=new BarcodeDetector({formats:FORMATS.filter(f=>sup.includes(f))});
-      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-      video.srcObject=stream; await video.play(); nativeTick();
-    } else {                                               // ZXing fallback (iOS Safari etc.)
-      const H=ZXing; const hints=new Map(); hints.set(H.DecodeHintType.POSSIBLE_FORMATS,[H.BarcodeFormat.QR_CODE,H.BarcodeFormat.CODE_128,H.BarcodeFormat.CODE_39,H.BarcodeFormat.EAN_13,H.BarcodeFormat.EAN_8,H.BarcodeFormat.ITF,H.BarcodeFormat.DATA_MATRIX,H.BarcodeFormat.PDF_417,H.BarcodeFormat.AZTEC]);
-      hints.set(H.DecodeHintType.TRY_HARDER,true);
-      zx=new H.BrowserMultiFormatReader(hints,300);
-      await zx.decodeFromConstraints({video:{facingMode:'environment'}},video,(res)=>{ if(res)onHit(res.getText()); });
-    }
-  }catch(e){ stopScan(); $('scanIdle').querySelector('p').textContent='Camera not available (needs HTTPS + permission). Type the number below instead.'; }
+    let sup=[]; try{ if('BarcodeDetector' in window) sup=await BarcodeDetector.getSupportedFormats(); }catch(e){}
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}});
+    video.srcObject=stream; await video.play();
+    if(sup.includes('code_128')&&sup.includes('qr_code')){
+      detector=new BarcodeDetector({formats:FORMATS.filter(f=>sup.includes(f))}); $('engine').textContent='native scanner';
+    } else { detector=null; $('engine').textContent='ZXing scanner'; }
+    nativeTick();
+  }catch(e){ stopScan(); $('scanIdle').querySelector('p').textContent='Camera not available ('+(e&&e.message||e)+'). Type the number below instead.'; }
 }
+const cv=document.createElement('canvas'), cx=cv.getContext('2d',{willReadFrequently:true});
 async function nativeTick(){
   if(!scanning)return;
-  if(video.readyState===video.HAVE_ENOUGH_DATA){ try{ const r=await detector.detect(video); if(r.length)onHit(r[0].rawValue); }catch(e){} }
-  setTimeout(nativeTick,200);
+  if(video.readyState===video.HAVE_ENOUGH_DATA){
+    try{
+      if(detector){ const r=await detector.detect(video); if(r.length)onHit(r[0].rawValue); }
+      else if(window.zxRead){
+        const W=Math.min(video.videoWidth,1280), H=Math.round(video.videoHeight*W/video.videoWidth);
+        cv.width=W; cv.height=H; cx.drawImage(video,0,0,W,H);
+        const r=await window.zxRead(cx.getImageData(0,0,W,H)); if(r.length&&r[0].isValid)onHit(r[0].text);
+      }
+    }catch(e){ console.warn(e); }
+  }
+  setTimeout(nativeTick,80);
 }
 function stopScan(){
-  scanning=false; if(zx){zx.reset();zx=null;} if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  scanning=false; if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
   $('scanBox').classList.remove('live'); $('scanIdle').style.display='block';
 }
 $('startScan').onclick=startScan; $('stopScan').onclick=stopScan;
@@ -393,6 +422,8 @@ render();
   .btn-flag:active{transform:translateY(1px)}
   .scan .stop{position:absolute;top:10px;right:10px;background:rgba(7,28,43,.75);color:var(--foam);font-size:12px;font-weight:600;padding:7px 11px;border-radius:999px;display:none}
   .scan.live .stop{display:block}
+  .scan .hint{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:var(--mist);background:rgba(7,28,43,.6);padding:6px;display:none}
+  .scan.live .hint{display:block}
 
   /* manual */
   .manual{padding:14px 18px 0}
@@ -469,6 +500,7 @@ render();
       <button class="btn-flag" id="startScan">Start camera</button>
     </div>
     <button class="stop" id="stopScan">Stop camera</button>
+    <div class="hint" id="scanHint"><span id="engine"></span> · hold barcode flat, 10–15 cm away, fill the width</div>
   </section>
 
   <section class="manual">
