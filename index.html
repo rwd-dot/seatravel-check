@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seatravel · Booking check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<style>
+  :root{
+    --sea:#0B2A3F; --deep:#071C2B; --foam:#F2F6F8; --mist:#C9D6DE; --rope:#8FA3B0;
+    --flag:#FFD23F; --go:#1FA34A; --stop:#D7263D; --ink:#0B1F2D;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --cond:"Barlow Condensed",Impact,sans-serif;
+    --body:"Inter",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--body);background:var(--sea);color:var(--foam);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  .app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px}
+  .brand{font-family:var(--cond);font-weight:800;font-size:26px;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+  .brand small{display:block;font-family:var(--body);font-weight:500;font-size:11px;letter-spacing:.12em;color:var(--rope);margin-top:3px;text-transform:uppercase}
+  .sync{font-size:12px;color:var(--mist);text-align:right;line-height:1.3}
+  .sync b{display:block;color:var(--foam);font-weight:600}
+  .sync button{color:var(--flag);font-weight:600;font-size:12px;margin-top:2px;text-decoration:underline;text-underline-offset:3px}
+
+  /* scanner */
+  .scan{position:relative;margin:6px 18px 0;border-radius:18px;overflow:hidden;background:var(--deep);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+  .scan video{width:100%;height:100%;object-fit:cover;display:none}
+  .scan.live video{display:block}
+  .scan canvas{display:none}
+  .reticle{position:absolute;inset:14%;border-radius:12px;pointer-events:none}
+  .reticle::before,.reticle::after,.reticle i::before,.reticle i::after{content:"";position:absolute;width:34px;height:34px;border:4px solid var(--flag)}
+  .reticle::before{top:0;left:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+  .reticle::after{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+  .reticle i::before{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 8px}
+  .reticle i::after{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
+  .scan.live .beam{position:absolute;left:14%;right:14%;height:2px;background:var(--flag);opacity:.85;animation:beam 2.2s ease-in-out infinite}
+  @keyframes beam{0%{top:16%}50%{top:82%}100%{top:16%}}
+  @media (prefers-reduced-motion:reduce){.scan.live .beam{animation:none;top:50%}}
+  .scan-idle{text-align:center;padding:24px}
+  .scan-idle p{color:var(--rope);font-size:14px;margin-bottom:14px;line-height:1.45}
+  .btn-flag{background:var(--flag);color:var(--ink);font-family:var(--cond);font-weight:800;font-size:20px;letter-spacing:.04em;text-transform:uppercase;padding:14px 26px;border-radius:12px}
+  .btn-flag:active{transform:translateY(1px)}
+  .scan .stop{position:absolute;top:10px;right:10px;background:rgba(7,28,43,.75);color:var(--foam);font-size:12px;font-weight:600;padding:7px 11px;border-radius:999px;display:none}
+  .scan.live .stop{display:block}
+
+  /* manual */
+  .manual{padding:14px 18px 0}
+  .manual label{display:block;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--rope);margin-bottom:6px}
+  .row{display:flex;gap:8px}
+  .row input{flex:1;min-width:0;font-family:var(--mono);font-size:18px;padding:13px 14px;border-radius:12px;border:2px solid transparent;background:var(--deep);color:var(--foam);text-transform:uppercase;outline:none}
+  .row input:focus{border-color:var(--flag)}
+  .row input::placeholder{text-transform:none;color:#4E6676;font-family:var(--body);font-size:15px}
+  .row button{background:var(--foam);color:var(--ink);font-family:var(--cond);font-weight:800;font-size:18px;letter-spacing:.04em;padding:0 20px;border-radius:12px;text-transform:uppercase}
+
+  /* recent */
+  .recent{padding:18px 18px 24px;flex:1}
+  .recent h2{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--rope);margin-bottom:8px}
+  .log{list-style:none}
+  .log li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(201,214,222,.12);font-size:14px}
+  .log .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .log .dot.ok{background:var(--go)} .log .dot.no{background:var(--stop)}
+  .log code{font-family:var(--mono);font-size:13px;color:var(--mist)}
+  .log .who{flex:1;color:var(--foam)}
+  .log time{color:var(--rope);font-size:12px}
+  .empty{color:var(--rope);font-size:14px;line-height:1.5}
+
+  /* verdict overlay — the signature: readable from arm's length, in sun */
+  .verdict{position:fixed;inset:0;display:none;flex-direction:column;z-index:20;color:#fff}
+  .verdict.show{display:flex}
+  .verdict.ok{background:var(--go)} .verdict.no{background:var(--stop)}
+  .v-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+  .v-word{font-family:var(--cond);font-weight:800;font-size:clamp(84px,26vw,150px);line-height:.9;letter-spacing:.01em;text-transform:uppercase}
+  .v-sub{margin-top:10px;font-family:var(--mono);font-size:18px;opacity:.9}
+  .v-card{background:#fff;color:var(--ink);border-radius:22px 22px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom))}
+  .v-card .chan{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:#E8EEF2;color:#3E5666;margin-bottom:10px}
+  .v-name{font-family:var(--cond);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase}
+  .v-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:16px 0 18px}
+  .v-grid div{background:#F2F6F8;border-radius:12px;padding:10px 12px}
+  .v-grid span{display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#7A8E9A}
+  .v-grid b{display:block;font-family:var(--cond);font-size:28px;font-weight:800;line-height:1.1;margin-top:2px}
+  .v-note{font-size:14px;color:#3E5666;line-height:1.5;margin-bottom:18px}
+  .v-actions{display:flex;gap:10px}
+  .v-actions button{flex:1;padding:15px;border-radius:12px;font-family:var(--cond);font-weight:800;font-size:20px;letter-spacing:.04em;text-transform:uppercase}
+  .v-actions .primary{background:var(--ink);color:#fff}
+  .v-actions .ghost{background:#E8EEF2;color:var(--ink)}
+  .v-card.no .v-name{font-size:24px}
+
+  /* settings sheet */
+  .sheet{position:fixed;inset:0;background:rgba(7,28,43,.6);display:none;z-index:30;align-items:flex-end}
+  .sheet.show{display:flex}
+  .sheet>div{background:var(--foam);color:var(--ink);width:100%;max-width:520px;margin:0 auto;border-radius:22px 22px 0 0;padding:20px 20px calc(22px + env(safe-area-inset-bottom));max-height:88dvh;overflow:auto}
+  .sheet h3{font-family:var(--cond);font-weight:800;font-size:26px;text-transform:uppercase;margin-bottom:4px}
+  .sheet p{font-size:14px;color:#3E5666;line-height:1.5;margin-bottom:12px}
+  .sheet textarea{width:100%;height:150px;font-family:var(--mono);font-size:12px;padding:10px;border-radius:10px;border:1px solid var(--mist);resize:vertical}
+  .sheet .btns{display:flex;gap:8px;margin-top:10px}
+  .sheet .btns button{flex:1;padding:12px;border-radius:10px;font-weight:600;font-size:14px}
+  .sheet .primary{background:var(--ink);color:#fff}
+  .sheet .ghost{background:#E1E9EE;color:var(--ink)}
+  .sheet table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 14px}
+  .sheet td{padding:6px 0;border-bottom:1px solid var(--mist);vertical-align:top}
+  .sheet td:last-child{font-family:var(--mono);font-size:12px;color:#3E5666;text-align:right}
+  .stat{font-size:13px;color:#3E5666;margin:-4px 0 12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">Seatravel<small>Booking check · Marina</small></div>
+    <div class="sync"><b id="count">0 bookings</b><span id="lastSync">not synced</span><br><button id="openSettings">Sync &amp; settings</button></div>
+  </header>
+
+  <section class="scan" id="scanBox">
+    <video id="video" playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div class="reticle"><i></i></div>
+    <div class="beam"></div>
+    <div class="scan-idle" id="scanIdle">
+      <p>Point the camera at the QR code on the guest's voucher — GetYourGuide, Viator, Bókun, hiking.fo and PDF tickets all work.</p>
+      <button class="btn-flag" id="startScan">Start camera</button>
+    </div>
+    <button class="stop" id="stopScan">Stop camera</button>
+  </section>
+
+  <section class="manual">
+    <label for="manual">No code? Type the order number</label>
+    <div class="row">
+      <input id="manual" placeholder="e.g. GYGKBF6W2FL7, BR-1438539893, #150099" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search">
+      <button id="check">Check</button>
+    </div>
+  </section>
+
+  <section class="recent">
+    <h2>Checked today</h2>
+    <ul class="log" id="log"></ul>
+    <p class="empty" id="logEmpty">Nothing checked yet. Every check lands here so the crew can see who's already through.</p>
+  </section>
+</div>
+
+<!-- Verdict -->
+<div class="verdict" id="verdict" role="dialog" aria-live="assertive">
+  <div class="v-top">
+    <div class="v-word" id="vWord">Board</div>
+    <div class="v-sub" id="vCode"></div>
+  </div>
+  <div class="v-card" id="vCard">
+    <span class="chan" id="vChan"></span>
+    <div class="v-name" id="vName"></div>
+    <div class="v-grid" id="vGrid">
+      <div><span>Date</span><b id="vDate"></b></div>
+      <div><span>Time</span><b id="vTime"></b></div>
+      <div><span>Pax</span><b id="vPax"></b></div>
+    </div>
+    <p class="v-note" id="vNote"></p>
+    <div class="v-actions">
+      <button class="ghost" id="vClose">Close</button>
+      <button class="primary" id="vNext">Next guest</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings / sync -->
+<div class="sheet" id="sheet">
+  <div>
+    <h3>Sync from seatravel@seatravel.fo</h3>
+    <p>A Google Apps Script (Code.gs) reads every booking and cancellation email from Bókun, Guide to Faroe Islands, hiking.fo, Discover Faroe Islands and Mykines.fo, and publishes one list. This page loads it on open and on Sync. Until the script is deployed it reads bookings.json next to this file — a dump of the inbox from 15–21 Aug.</p>
+    <div class="btns"><button class="primary" id="doSync">Sync now</button><button class="ghost" id="clearAll">Clear bookings</button></div>
+    <p class="stat" id="syncStat"></p>
+
+    <h3 style="margin-top:18px">Paste an email</h3>
+    <textarea id="paste" placeholder="Paste the body of a confirmation email here…"></textarea>
+    <div class="btns"><button class="primary" id="doParse">Extract bookings</button></div>
+
+    <h3 style="margin-top:18px">Where bookings come from</h3>
+    <table>
+      <tr><td>GetYourGuide → Bókun</td><td>GYG + 9 chars</td></tr>
+      <tr><td>Viator → Bókun</td><td>BR-########## (10 digits)</td></tr>
+      <tr><td>seatravel.fo → Bókun</td><td>SEA-T#########</td></tr>
+      <tr><td>Guide to Faroe Islands</td><td>Order #######</td></tr>
+      <tr><td>hiking.fo</td><td>HIK-######</td></tr>
+      <tr><td>Discover Faroe Islands</td><td>DFI-####</td></tr>
+      <tr><td>Mykines.fo</td><td>MYK-#####</td></tr>
+    </table>
+    <div class="btns"><button class="ghost" id="closeSheet">Done</button></div>
+  </div>
+</div>
+
+<script>
+/* ===== CONFIG: paste the Apps Script web-app URL here once deployed (see Code.gs). Leave blank to use bookings.json next to this file. ===== */
+const FEED_URL = "";
+
+/* ================= PARSERS — one per sender, built from real emails in seatravel@seatravel.fo ================= */
+const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,
+  jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12,
+  januar:1,februar:2,mars:3,apríl:4,mai:5,juni:6,juli:7,august_:8,september_:9,oktober:10,november_:11,desember:12};
+const mon=s=>MONTHS[s.toLowerCase()]||MONTHS[s.toLowerCase()+'_']||0;
+const iso=(y,m,d)=>`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+const g=(t,re)=>(t.match(re)||[])[1]?.trim()||'';
+
+const PARSERS=[
+ { id:'bokun', name:'Bókun', test:t=>/bokun\.io|Product booking ref/i.test(t), parse(t){
+    const ext=g(t,/Ext\. booking ref\s*\|?\s*([A-Z0-9-]+)/i), pbr=g(t,/Product booking ref\.?\s*\|?\s*(SEA-T\d+)/i), br=g(t,/Booking ref\.\s*\|?\s*([A-Z]+-\d+)/i);
+    const chan=g(t,/Booking channel\s*\|?\s*([^|\n]+)/i)||'seatravel.fo';
+    const d=t.match(/\|\s*Date\s*\|\s*\w+\s+(\d{1,2})\.(\w{3})\s*'(\d{2})\s*@\s*(\d{1,2}:\d{2})/i)||t.match(/(\d{1,2})\.(\w{3})\s*'(\d{2})\s*@\s*(\d{1,2}:\d{2})/);
+    return { codes:[ext,pbr,br].filter(Boolean), channel: ext? (ext.startsWith('GYG')?'GetYourGuide':'Viator') : 'seatravel.fo',
+      name:g(t,/Customer\s*\|?\s*([^|\n]+)/i).split(', ').reverse().join(' '), tour:g(t,/\|\s*Product\s*\|\s*(?:\d+P\d+\s*-\s*)?([^|\n]+)/i)||g(t,/\nProduct\s+(?:\d+P\d+\s*-\s*)?([^\n|]+)/i),
+      date:d?iso('20'+d[3],mon(d[2]),d[1]):'', time:d?d[4].padStart(5,'0'):'', pax:+g(t,/PAX\s*\|?\s*(\d+)/i)||1,
+      cancelled:/cancelled booking|has been cancelled/i.test(t) }; } },
+ { id:'gtf', name:'Guide to Faroe Islands', test:t=>/guidetofaroeislands|Order #\d+/i.test(t), parse(t){
+    const d=t.match(/From:\*?\s*(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{1,2}:\d{2})/);
+    return { codes:['GTF-'+g(t,/Order #(\d+)/)], channel:'Guide to Faroe Islands', name:g(t,/order from ([^.\n]+)\./), tour:g(t,/Your earnings\n(.+)/),
+      date:d?iso(d[3],mon(d[2]),d[1]):'', time:d?d[4]:'', pax:+g(t,/People:\*?\s*(\d+)/)||1, cancelled:/avlýst|cancel/i.test(t) }; } },
+ { id:'hik', name:'hiking.fo', test:t=>/Order no\.\s*:\s*HIK-/i.test(t), parse(t){
+    const d=t.match(/\w+\s+(\d{1,2})\.\s+(\w+)\s+(\d{4})\s+(\d{1,2}:\d{2})/);
+    return { codes:[g(t,/Order no\.\s*:\s*(HIK-\d+)/i)], channel:'hiking.fo', name:g(t,/Order date:[^\n]*\n\n?([^\n]+)/), tour:g(t,/(Boat tour[^\n]*)/),
+      date:d?iso(d[3],mon(d[2]),d[1]):'', time:d?d[4]:'', pax:+g(t,/Adults?\s*(\d)(?=\d{3},)/i)||+g(t,/Adults?\s*(\d+)\b/i)||1, cancelled:false }; } },
+ { id:'dfi', name:'Discover Faroe Islands', test:t=>/DFI-\d+/.test(t), parse(t){
+    return { codes:[g(t,/(DFI-\d+)/)], channel:'Discover Faroe Islands', name:g(t,/Guest(?: name)?:\s*([^\n]+)/i)||'Guest', tour:g(t,/Tour:\s*([^\n]+)/),
+      date:g(t,/Date:\s*(\d{4}-\d{2}-\d{2})/), time:g(t,/at (\d{1,2}:\d{2})/), pax:+g(t,/Guests:\s*(\d+)/)||1, cancelled:/cancel/i.test(t) }; } },
+ { id:'myk', name:'Mykines.fo', test:t=>/MYK-[A-Z0-9]{5}/.test(t), parse(t){
+    const d=t.match(/(\w+)\s+(\d{1,2}),\s+(\d{4})\s+—?\s*Departure\s+(\d{1,2}:\d{2})/);
+    return { codes:[g(t,/(MYK-[A-Z0-9]{5})/)], channel:'Mykines.fo', name:g(t,/Dear ([^,\n]+),/), tour:'Mykines ferry',
+      date:d?iso(d[3],mon(d[1]),d[2]):'', time:d?d[4]:'', pax:+g(t,/Passengers:\s*(\d+)/)||1, cancelled:false }; } },
+];
+const normCode=s=>String(s||'').toUpperCase().replace(/\s+/g,'').replace(/^BR-?(\d{9,10})$/,'$1').replace(/^GTF-?#?/,'GTF-').replace(/^#(\d{6})$/,'GTF-$1');
+const CODE_RE=/\bGYG[A-Z0-9]{9}\b|\bBR-?\d{9,10}\b|\b\d{10}\b|\bSEA-T\d+\b|\b(?:GET|VIA|SEA)-\d+\b|\bHIK-\d+\b|\bDFI-\d+\b|\bMYK-[A-Z0-9]{5}\b|\bGTF-\d+\b|#\d{6}\b/gi;
+function codesIn(raw){ return [...new Set([...String(raw).toUpperCase().matchAll(CODE_RE)].map(m=>normCode(m[0])))] }
+function channelGuess(code){
+  if(/^GYG/.test(code))return'GetYourGuide'; if(/^\d{10}$/.test(code))return'Viator'; if(/^SEA-T|^SEA-\d/.test(code))return'seatravel.fo';
+  if(/^GET/.test(code))return'GetYourGuide'; if(/^VIA/.test(code))return'Viator'; if(/^HIK/.test(code))return'hiking.fo';
+  if(/^DFI/.test(code))return'Discover Faroe Islands'; if(/^MYK/.test(code))return'Mykines.fo'; if(/^GTF/.test(code))return'Guide to Faroe Islands'; return''; }
+function parseEmail(text){ const p=PARSERS.find(p=>p.test(text)); if(!p)return null; const b=p.parse(text); b.codes=b.codes.map(normCode).filter(Boolean); return b.codes.length?b:null; }
+
+const SAMPLE_EMAIL=`The following booking was just created.
+
+| Booking ref. | GET-101484243 |
+| Product booking ref. | SEA-T143172761 |
+| Ext. booking ref | GYGKBF6W2FL7 |
+| Product | 363313P1 - Exclusive 1,5 Hour Drangarnir Boat Tour |
+| Supplier | Seatravel.fo |
+| Sold by | GetYourGuide |
+| Booking channel | GetYourGuide |
+| Customer | Sande, Brandy |
+| Date | Fri 28.Aug '26 @ 13:00 |
+| PAX | 2 Adult |`;
+
+/* ================= state ================= */
+let bookings=[], index={}, log=[];
+const $=id=>document.getElementById(id);
+const today=new Date().toISOString().slice(0,10);
+function addBookings(list){
+  let added=0;
+  for(const b of list){
+    const hit=b.codes.map(c=>index[c]).find(Boolean);
+    if(hit){ Object.assign(hit,b,{codes:[...new Set([...hit.codes,...b.codes])]}); hit.codes.forEach(c=>index[c]=hit); }
+    else { bookings.push(b); b.codes.forEach(c=>index[c]=b); added++; }
+  }
+  $('lastSync').textContent='synced '+new Date().toTimeString().slice(0,5); render(); return added;
+}
+function render(){
+  const n=bookings.filter(b=>!b.cancelled).length, td=bookings.filter(b=>b.date===today&&!b.cancelled).length;
+  $('count').textContent=`${n} active · ${td} today`;
+  $('log').innerHTML=log.map(l=>`<li><span class="dot ${l.cls}"></span><code>${l.code}</code><span class="who">${l.who}</span><time>${l.t}</time></li>`).join('');
+  $('logEmpty').style.display=log.length?'none':'block';
+}
+
+/* ================= check ================= */
+function check(raw){
+  const codes=codesIn(raw); const code=codes[0]||normCode(raw);
+  const b=codes.map(c=>index[c]).find(Boolean)||index[code];
+  const v=$('verdict'), card=$('vCard'); let cls,word,who;
+  $('vCode').textContent=b?b.codes.join(' · '):code;
+  $('vChan').textContent=b?b.channel:(channelGuess(code)||'Unknown channel');
+  if(b){
+    $('vName').textContent=b.name||(b.channel+' guest'); $('vGrid').style.display='grid';
+    $('vDate').textContent=b.date?b.date.slice(5).replace('-','/'):'—'; $('vTime').textContent=b.time||'—'; $('vPax').textContent=b.pax||'—';
+    if(b.cancelled){cls='no';word='Cancelled';who='cancelled';$('vNote').textContent='This booking was cancelled. Do not board without a new booking.';}
+    else if(b.date===today){cls='ok';word='Board';who=b.name;$('vNote').textContent=`${b.tour}. ${b.pax===1?'1 guest':b.pax+' guests'} on this booking.`;}
+    else {cls='warn';word='Check';who=b.name+' · '+b.date.slice(5);$('vNote').textContent=`Booked for ${b.date} at ${b.time}, not today. Confirm with the guest before boarding.`;}
+  } else {
+    cls='no';word='Not found';who='not found'; $('vGrid').style.display='none'; const ch=channelGuess(code);
+    $('vName').textContent=ch?`No ${ch} booking with this number`:'Not a booking number we recognise';
+    $('vNote').textContent=ch?'It may not have reached the inbox yet. Sync again, or look the guest up by name.':'Look for a reference like GYG…, BR-…, SEA-T…, HIK-…, DFI-…, MYK-… or an Order # on the voucher.';
+  }
+  v.className='verdict show '+cls; v.style.background=cls==='warn'?'#C9841C':''; card.className='v-card '+(b?'':'no');
+  $('vWord').textContent=word;
+  if(navigator.vibrate)navigator.vibrate(cls==='ok'?60:[60,60,60]);
+  log.unshift({code,cls:cls==='ok'?'ok':'no',who,t:new Date().toTimeString().slice(0,5)}); render();
+}
+$('check').onclick=()=>{const v=$('manual').value.trim(); if(v){check(v);$('manual').value='';}};
+$('manual').addEventListener('keydown',e=>{if(e.key==='Enter')$('check').click();});
+const closeVerdict=()=>{$('verdict').classList.remove('show'); lastCode='';};
+$('vClose').onclick=closeVerdict; $('vNext').onclick=()=>{closeVerdict(); if(!scanning)$('manual').focus();};
+
+/* ================= camera + QR ================= */
+let scanning=false,stream=null,lastCode='';
+const video=$('video'),canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+async function startScan(){
+  try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); video.srcObject=stream; await video.play();
+    scanning=true; $('scanBox').classList.add('live'); $('scanIdle').style.display='none'; requestAnimationFrame(tick);
+  }catch(e){ $('scanIdle').querySelector('p').textContent='Camera not available here (needs HTTPS + permission). Type the number below instead.'; }
+}
+function stopScan(){scanning=false; if(stream)stream.getTracks().forEach(t=>t.stop()); $('scanBox').classList.remove('live'); $('scanIdle').style.display='block';}
+function tick(){
+  if(!scanning)return;
+  if(video.readyState===video.HAVE_ENOUGH_DATA&&!$('verdict').classList.contains('show')){
+    canvas.width=video.videoWidth; canvas.height=video.videoHeight; ctx.drawImage(video,0,0);
+    const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const q=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
+    if(q&&q.data&&q.data!==lastCode){lastCode=q.data; check(q.data);}
+  }
+  requestAnimationFrame(tick);
+}
+$('startScan').onclick=startScan; $('stopScan').onclick=stopScan;
+
+/* ================= sync / settings ================= */
+$('openSettings').onclick=()=>$('sheet').classList.add('show');
+$('closeSheet').onclick=()=>$('sheet').classList.remove('show');
+$('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))$('sheet').classList.remove('show');});
+async function sync(){
+  const url=FEED_URL||'bookings.json';
+  $('lastSync').textContent='syncing…';
+  try{
+    const r=await fetch(url,{cache:'no-store'}); if(!r.ok)throw new Error(r.status);
+    const d=await r.json(); const n=addBookings(d.bookings||[]);
+    const gen=d.generated?new Date(d.generated):null;
+    $('lastSync').textContent='inbox as of '+(gen?gen.toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'?');
+    $('syncStat').textContent=`${(d.bookings||[]).length} bookings in feed, ${n} new here.`;
+  }catch(e){ $('lastSync').textContent='sync failed'; $('syncStat').textContent='Could not load '+url+' ('+e.message+'). Is the file next to this page, or is FEED_URL set?'; }
+}
+$('doSync').onclick=sync;
+sync();
+$('clearAll').onclick=()=>{bookings=[];index={};log=[];$('lastSync').textContent='not synced';$('syncStat').textContent='Cleared.';render();};
+$('paste').value=SAMPLE_EMAIL;
+$('doParse').onclick=()=>{
+  const b=parseEmail($('paste').value);
+  if(!b){$('syncStat').textContent='Could not recognise that email. Paste the full text of a booking email from Bókun, Guide to Faroe Islands, hiking.fo, Discover Faroe Islands or Mykines.fo.';return;}
+  addBookings([b]); $('syncStat').textContent=`${b.channel}: ${b.name} · ${b.date} ${b.time} · ${b.pax} pax · ${b.codes.join(', ')}${b.cancelled?' (cancelled)':''}`;
+};
+render();
+</script>
+<style>
+  :root{
+    --sea:#0B2A3F; --deep:#071C2B; --foam:#F2F6F8; --mist:#C9D6DE; --rope:#8FA3B0;
+    --flag:#FFD23F; --go:#1FA34A; --stop:#D7263D; --ink:#0B1F2D;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --cond:"Barlow Condensed",Impact,sans-serif;
+    --body:"Inter",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--body);background:var(--sea);color:var(--foam);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  .app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px}
+  .brand{font-family:var(--cond);font-weight:800;font-size:26px;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+  .brand small{display:block;font-family:var(--body);font-weight:500;font-size:11px;letter-spacing:.12em;color:var(--rope);margin-top:3px;text-transform:uppercase}
+  .sync{font-size:12px;color:var(--mist);text-align:right;line-height:1.3}
+  .sync b{display:block;color:var(--foam);font-weight:600}
+  .sync button{color:var(--flag);font-weight:600;font-size:12px;margin-top:2px;text-decoration:underline;text-underline-offset:3px}
+
+  /* scanner */
+  .scan{position:relative;margin:6px 18px 0;border-radius:18px;overflow:hidden;background:var(--deep);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+  .scan video{width:100%;height:100%;object-fit:cover;display:none}
+  .scan.live video{display:block}
+  .scan canvas{display:none}
+  .reticle{position:absolute;inset:14%;border-radius:12px;pointer-events:none}
+  .reticle::before,.reticle::after,.reticle i::before,.reticle i::after{content:"";position:absolute;width:34px;height:34px;border:4px solid var(--flag)}
+  .reticle::before{top:0;left:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+  .reticle::after{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+  .reticle i::before{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 8px}
+  .reticle i::after{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
+  .scan.live .beam{position:absolute;left:14%;right:14%;height:2px;background:var(--flag);opacity:.85;animation:beam 2.2s ease-in-out infinite}
+  @keyframes beam{0%{top:16%}50%{top:82%}100%{top:16%}}
+  @media (prefers-reduced-motion:reduce){.scan.live .beam{animation:none;top:50%}}
+  .scan-idle{text-align:center;padding:24px}
+  .scan-idle p{color:var(--rope);font-size:14px;margin-bottom:14px;line-height:1.45}
+  .btn-flag{background:var(--flag);color:var(--ink);font-family:var(--cond);font-weight:800;font-size:20px;letter-spacing:.04em;text-transform:uppercase;padding:14px 26px;border-radius:12px}
+  .btn-flag:active{transform:translateY(1px)}
+  .scan .stop{position:absolute;top:10px;right:10px;background:rgba(7,28,43,.75);color:var(--foam);font-size:12px;font-weight:600;padding:7px 11px;border-radius:999px;display:none}
+  .scan.live .stop{display:block}
+
+  /* manual */
+  .manual{padding:14px 18px 0}
+  .manual label{display:block;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--rope);margin-bottom:6px}
+  .row{display:flex;gap:8px}
+  .row input{flex:1;min-width:0;font-family:var(--mono);font-size:18px;padding:13px 14px;border-radius:12px;border:2px solid transparent;background:var(--deep);color:var(--foam);text-transform:uppercase;outline:none}
+  .row input:focus{border-color:var(--flag)}
+  .row input::placeholder{text-transform:none;color:#4E6676;font-family:var(--body);font-size:15px}
+  .row button{background:var(--foam);color:var(--ink);font-family:var(--cond);font-weight:800;font-size:18px;letter-spacing:.04em;padding:0 20px;border-radius:12px;text-transform:uppercase}
+
+  /* recent */
+  .recent{padding:18px 18px 24px;flex:1}
+  .recent h2{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--rope);margin-bottom:8px}
+  .log{list-style:none}
+  .log li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(201,214,222,.12);font-size:14px}
+  .log .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .log .dot.ok{background:var(--go)} .log .dot.no{background:var(--stop)}
+  .log code{font-family:var(--mono);font-size:13px;color:var(--mist)}
+  .log .who{flex:1;color:var(--foam)}
+  .log time{color:var(--rope);font-size:12px}
+  .empty{color:var(--rope);font-size:14px;line-height:1.5}
+
+  /* verdict overlay — the signature: readable from arm's length, in sun */
+  .verdict{position:fixed;inset:0;display:none;flex-direction:column;z-index:20;color:#fff}
+  .verdict.show{display:flex}
+  .verdict.ok{background:var(--go)} .verdict.no{background:var(--stop)}
+  .v-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+  .v-word{font-family:var(--cond);font-weight:800;font-size:clamp(84px,26vw,150px);line-height:.9;letter-spacing:.01em;text-transform:uppercase}
+  .v-sub{margin-top:10px;font-family:var(--mono);font-size:18px;opacity:.9}
+  .v-card{background:#fff;color:var(--ink);border-radius:22px 22px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom))}
+  .v-card .chan{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:#E8EEF2;color:#3E5666;margin-bottom:10px}
+  .v-name{font-family:var(--cond);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase}
+  .v-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:16px 0 18px}
+  .v-grid div{background:#F2F6F8;border-radius:12px;padding:10px 12px}
+  .v-grid span{display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#7A8E9A}
+  .v-grid b{display:block;font-family:var(--cond);font-size:28px;font-weight:800;line-height:1.1;margin-top:2px}
+  .v-note{font-size:14px;color:#3E5666;line-height:1.5;margin-bottom:18px}
+  .v-actions{display:flex;gap:10px}
+  .v-actions button{flex:1;padding:15px;border-radius:12px;font-family:var(--cond);font-weight:800;font-size:20px;letter-spacing:.04em;text-transform:uppercase}
+  .v-actions .primary{background:var(--ink);color:#fff}
+  .v-actions .ghost{background:#E8EEF2;color:var(--ink)}
+  .v-card.no .v-name{font-size:24px}
+
+  /* settings sheet */
+  .sheet{position:fixed;inset:0;background:rgba(7,28,43,.6);display:none;z-index:30;align-items:flex-end}
+  .sheet.show{display:flex}
+  .sheet>div{background:var(--foam);color:var(--ink);width:100%;max-width:520px;margin:0 auto;border-radius:22px 22px 0 0;padding:20px 20px calc(22px + env(safe-area-inset-bottom));max-height:88dvh;overflow:auto}
+  .sheet h3{font-family:var(--cond);font-weight:800;font-size:26px;text-transform:uppercase;margin-bottom:4px}
+  .sheet p{font-size:14px;color:#3E5666;line-height:1.5;margin-bottom:12px}
+  .sheet textarea{width:100%;height:150px;font-family:var(--mono);font-size:12px;padding:10px;border-radius:10px;border:1px solid var(--mist);resize:vertical}
+  .sheet .btns{display:flex;gap:8px;margin-top:10px}
+  .sheet .btns button{flex:1;padding:12px;border-radius:10px;font-weight:600;font-size:14px}
+  .sheet .primary{background:var(--ink);color:#fff}
+  .sheet .ghost{background:#E1E9EE;color:var(--ink)}
+  .sheet table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 14px}
+  .sheet td{padding:6px 0;border-bottom:1px solid var(--mist);vertical-align:top}
+  .sheet td:last-child{font-family:var(--mono);font-size:12px;color:#3E5666;text-align:right}
+  .stat{font-size:13px;color:#3E5666;margin:-4px 0 12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">Seatravel<small>Booking check · Marina</small></div>
+    <div class="sync"><b id="count">0 bookings</b><span id="lastSync">not synced</span><br><button id="openSettings">Sync &amp; settings</button></div>
+  </header>
+
+  <section class="scan" id="scanBox">
+    <video id="video" playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div class="reticle"><i></i></div>
+    <div class="beam"></div>
+    <div class="scan-idle" id="scanIdle">
+      <p>Point the camera at the QR code on the guest's voucher — GetYourGuide, Viator, Bókun, hiking.fo and PDF tickets all work.</p>
+      <button class="btn-flag" id="startScan">Start camera</button>
+    </div>
+    <button class="stop" id="stopScan">Stop camera</button>
+  </section>
+
+  <section class="manual">
+    <label for="manual">No code? Type the order number</label>
+    <div class="row">
+      <input id="manual" placeholder="e.g. GYGKBF6W2FL7, BR-1438539893, #150099" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search">
+      <button id="check">Check</button>
+    </div>
+  </section>
+
+  <section class="recent">
+    <h2>Checked today</h2>
+    <ul class="log" id="log"></ul>
+    <p class="empty" id="logEmpty">Nothing checked yet. Every check lands here so the crew can see who's already through.</p>
+  </section>
+</div>
+
+<!-- Verdict -->
+<div class="verdict" id="verdict" role="dialog" aria-live="assertive">
+  <div class="v-top">
+    <div class="v-word" id="vWord">Board</div>
+    <div class="v-sub" id="vCode"></div>
+  </div>
+  <div class="v-card" id="vCard">
+    <span class="chan" id="vChan"></span>
+    <div class="v-name" id="vName"></div>
+    <div class="v-grid" id="vGrid">
+      <div><span>Date</span><b id="vDate"></b></div>
+      <div><span>Time</span><b id="vTime"></b></div>
+      <div><span>Pax</span><b id="vPax"></b></div>
+    </div>
+    <p class="v-note" id="vNote"></p>
+    <div class="v-actions">
+      <button class="ghost" id="vClose">Close</button>
+      <button class="primary" id="vNext">Next guest</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings / sync -->
+<div class="sheet" id="sheet">
+  <div>
+    <h3>Sync from seatravel@seatravel.fo</h3>
+    <p>A Google Apps Script (Code.gs) reads every booking and cancellation email from Bókun, Guide to Faroe Islands, hiking.fo, Discover Faroe Islands and Mykines.fo, and publishes one list. This page loads it on open and on Sync. Until the script is deployed it reads bookings.json next to this file — a dump of the inbox from 15–21 Aug.</p>
+    <div class="btns"><button class="primary" id="doSync">Sync now</button><button class="ghost" id="clearAll">Clear bookings</button></div>
+    <p class="stat" id="syncStat"></p>
+
+    <h3 style="margin-top:18px">Paste an email</h3>
+    <textarea id="paste" placeholder="Paste the body of a confirmation email here…"></textarea>
+    <div class="btns"><button class="primary" id="doParse">Extract bookings</button></div>
+
+    <h3 style="margin-top:18px">Where bookings come from</h3>
+    <table>
+      <tr><td>GetYourGuide → Bókun</td><td>GYG + 9 chars</td></tr>
+      <tr><td>Viator → Bókun</td><td>BR-########## (10 digits)</td></tr>
+      <tr><td>seatravel.fo → Bókun</td><td>SEA-T#########</td></tr>
+      <tr><td>Guide to Faroe Islands</td><td>Order #######</td></tr>
+      <tr><td>hiking.fo</td><td>HIK-######</td></tr>
+      <tr><td>Discover Faroe Islands</td><td>DFI-####</td></tr>
+      <tr><td>Mykines.fo</td><td>MYK-#####</td></tr>
+    </table>
+    <div class="btns"><button class="ghost" id="closeSheet">Done</button></div>
+  </div>
+</div>
+
+
+</body>
+</html>
