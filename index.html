@@ -173,7 +173,7 @@
 <div class="sheet" id="sheet">
   <div>
     <h3>Sync from seatravel@seatravel.fo</h3>
-    <p>A Google Apps Script (Code.gs) reads every booking and cancellation email from Bókun, Guide to Faroe Islands, hiking.fo, Discover Faroe Islands and Mykines.fo, and publishes one list. This page loads it on open and on Sync. Until the script is deployed it reads bookings.json next to this file — a dump of the inbox from 15–21 Aug.</p>
+    <p>A Google Apps Script (Code.gs) reads every booking and cancellation email from Bókun, Guide to Faroe Islands, hiking.fo, Discover Faroe Islands and Mykines.fo, and publishes one list. This page loads it on open and on Sync. The script pushes the list to this site every 10 minutes as bookings.json.</p>
     <div class="btns"><button class="primary" id="doSync">Sync now</button><button class="ghost" id="clearAll">Clear bookings</button></div>
     <p class="stat" id="syncStat"></p>
 
@@ -197,7 +197,7 @@
 
 <script>
 /* ===== CONFIG: paste the Apps Script web-app URL here once deployed (see Code.gs). Leave blank to use bookings.json next to this file. ===== */
-const FEED_URL = "https://script.google.com/macros/s/AKfycbzlqB-j6D8uGo-kdOQujXa0HCbKviso8AVAycU3BAUSQQNEZMVuU2p73GNaVn1ksdb9/exec";
+const FEED_URL = "";  // blank = read bookings.json from this site (pushed there by Code.gs every 10 min)
 
 /* ================= PARSERS — one per sender, built from real emails in seatravel@seatravel.fo ================= */
 const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,
