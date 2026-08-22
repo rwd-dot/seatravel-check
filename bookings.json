@@ -1,0 +1,875 @@
+{
+ "generated": "2026-08-22T09:00:00Z",
+ "source": "seatravel@seatravel.fo (manual dump, 15–21 Aug 2026)",
+ "bookings": [
+  {
+   "codes": [
+    "MYK-PEU6R"
+   ],
+   "channel": "Mykines.fo",
+   "name": "Alex",
+   "tour": "Mykines ferry",
+   "date": "2026-08-15",
+   "time": "11:15",
+   "pax": 2,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "DFI-4238"
+   ],
+   "channel": "Discover Faroe Islands",
+   "name": "",
+   "tour": "Incredible 1.5 Hour Puffin Tour",
+   "date": "2026-08-15",
+   "time": "13:00",
+   "pax": 1,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "1371038165",
+    "SEA-T123895622",
+    "VIA-86297732"
+   ],
+   "channel": "Viator",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-16",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYG48YVZ83QM",
+    "SEA-T128484194",
+    "GET-89920802"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-16",
+   "time": "13:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYG48YK2LBRH",
+    "SEA-T142534078",
+    "GET-100986963"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-17",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYG83W9QZ45B",
+    "SEA-T142454549",
+    "GET-100925133"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-17",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYG32LZ6YQY8",
+    "SEA-T142380303",
+    "GET-100868707"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-17",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GTF-149717"
+   ],
+   "channel": "Guide to Faroe Islands",
+   "name": "Hermann Zimmermann",
+   "tour": "Unique 1.5 Hour Boat Tour to Drangarnir",
+   "date": "2026-08-18",
+   "time": "11:00",
+   "pax": 0,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYG7VKQRL92W",
+    "SEA-T142618231",
+    "GET-101050427"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Shared Ferry Boat Tour to Mykines",
+   "date": "2026-08-18",
+   "time": "11:15",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGVN24QAFRR",
+    "SEA-T142401855",
+    "GET-100885677"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Shared Ferry Boat Tour to Mykines",
+   "date": "2026-08-18",
+   "time": "11:15",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "MYK-5DUVY"
+   ],
+   "channel": "Mykines.fo",
+   "name": "Edoardo Fabio",
+   "tour": "Mykines ferry",
+   "date": "2026-08-18",
+   "time": "11:15",
+   "pax": 2,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "MYK-4PTBJ"
+   ],
+   "channel": "Mykines.fo",
+   "name": "Maria",
+   "tour": "Mykines ferry",
+   "date": "2026-08-18",
+   "time": "11:15",
+   "pax": 2,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "SEA-T142584953",
+    "SEA-101026199"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-19",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GTF-149649"
+   ],
+   "channel": "Guide to Faroe Islands",
+   "name": "Lukas Glanemann",
+   "tour": "Unique Puffin Safari Boat Tour",
+   "date": "2026-08-19",
+   "time": "09:00",
+   "pax": 0,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "SEA-T142649923",
+    "SEA-101075417"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-19",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GTF-149750"
+   ],
+   "channel": "Guide to Faroe Islands",
+   "name": "Jens-Joachim Margis",
+   "tour": "Unique 1.5 Hour Boat Tour to Drangarnir",
+   "date": "2026-08-19",
+   "time": "11:00",
+   "pax": 0,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGMX4AVNGQR",
+    "SEA-T142857976",
+    "GET-101238279"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Shared Ferry Boat Tour to Mykines",
+   "date": "2026-08-19",
+   "time": "11:15",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "MYK-CNL8D"
+   ],
+   "channel": "Mykines.fo",
+   "name": "Mohammed",
+   "tour": "Mykines ferry",
+   "date": "2026-08-19",
+   "time": "11:15",
+   "pax": 2,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "MYK-YK7BN"
+   ],
+   "channel": "Mykines.fo",
+   "name": "Mario",
+   "tour": "Mykines ferry",
+   "date": "2026-08-19",
+   "time": "11:15",
+   "pax": 2,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYG32LZ6VHA7",
+    "SEA-T142392187",
+    "GET-100878105"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-19",
+   "time": "13:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GTF-149980"
+   ],
+   "channel": "Guide to Faroe Islands",
+   "name": "Ivana Jovanovic",
+   "tour": "Unique 1.5 Hour Boat Tour to Drangarnir",
+   "date": "2026-08-19",
+   "time": "13:00",
+   "pax": 0,
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYGMX4A3QFQL",
+    "SEA-T142332680",
+    "GET-100831355"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-20",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "HIK-646406"
+   ],
+   "channel": "hiking.fo",
+   "name": "",
+   "tour": "Boat tour - Puffin Safari",
+   "date": "2026-08-20",
+   "time": "09:00",
+   "pax": 0,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "1438108729",
+    "SEA-T142779582",
+    "VIA-101175831"
+   ],
+   "channel": "Viator",
+   "tour": "Shared Ferry Boat Tour to Mykines",
+   "date": "2026-08-20",
+   "time": "11:15",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "1436611791",
+    "SEA-T142216421",
+    "VIA-100740379"
+   ],
+   "channel": "Viator",
+   "tour": "Shared Ferry Boat Tour to Mykines",
+   "date": "2026-08-20",
+   "time": "11:15",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "SEA-T142764514",
+    "SEA-101164473"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Private Sightseeing Tour with Local Skipper",
+   "date": "2026-08-20",
+   "time": "15:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "SEA-T142938139",
+    "SEA-101301400"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-21",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "SEA-T142477308",
+    "SEA-100944012"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-21",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GTF-149753"
+   ],
+   "channel": "Guide to Faroe Islands",
+   "name": "Jens-Joachim Margis",
+   "tour": "Unique Puffin Safari Boat Tour",
+   "date": "2026-08-21",
+   "time": "09:00",
+   "pax": 0,
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "SEA-T143088165",
+    "SEA-101418068"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Photography Boat Tour in Vágar",
+   "date": "2026-08-21",
+   "time": "13:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "SEA-T142725648",
+    "SEA-101134404"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-21",
+   "time": "13:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGMX4BLLA9M",
+    "SEA-T141198540",
+    "GET-99940426"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-22",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "SEA-T142791221",
+    "SEA-101185452"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-22",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYG32L683HG9",
+    "SEA-T130442647"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin → Drangarnir",
+   "date": "2026-08-22",
+   "time": "09:00",
+   "pax": 2,
+   "name": "Karsten",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "SEA-T143205447",
+    "SEA-101510850"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-22",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "1431143829",
+    "SEA-T140339881",
+    "VIA-99255623"
+   ],
+   "channel": "Viator",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-22",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYG2Q9F2VFZ2",
+    "SEA-T140854013",
+    "GET-99664988"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-22",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "1431287335",
+    "SEA-T140377151",
+    "VIA-99285988"
+   ],
+   "channel": "Viator",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-23",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYGG45ML4LM6",
+    "SEA-T141824612",
+    "GET-100434112"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-23",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYGRFQHVA2XM",
+    "SEA-T142447002",
+    "GET-100919450"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-23",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "1432983505",
+    "SEA-T140945028",
+    "VIA-99737477"
+   ],
+   "channel": "Viator",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-23",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GTF-150099"
+   ],
+   "channel": "Guide to Faroe Islands",
+   "name": "Catherine Laverick",
+   "tour": "Unique Puffin Safari Boat Tour",
+   "date": "2026-08-24",
+   "time": "09:00",
+   "pax": 1,
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYG48YKZ9NVG",
+    "SEA-T142568342",
+    "GET-101013215"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-24",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYG2Q9GHN8G6",
+    "SEA-T139752913",
+    "GET-98784050"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-24",
+   "time": "13:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "1382220061",
+    "SEA-T126959622",
+    "VIA-88734115"
+   ],
+   "channel": "Viator",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-25",
+   "time": "13:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "HIK-647754"
+   ],
+   "channel": "hiking.fo",
+   "name": "Martin Senoner",
+   "tour": "Boat tour - Puffin Safari",
+   "date": "2026-08-25",
+   "time": "19:00",
+   "pax": 2,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GET-100316087",
+    "GET-100945774",
+    "GYGZGZWQ3XQQ",
+    "SEA-T141673184",
+    "SEA-T142481789"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-26",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYGBLHGNV427",
+    "SEA-T142116904"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-26",
+   "time": "09:00",
+   "pax": 2,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "1438539893",
+    "SEA-T142945225",
+    "VIA-101306485"
+   ],
+   "channel": "Viator",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-26",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGLMRW6GGF6",
+    "SEA-T137848390"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Drangarnir (moved from Puffin)",
+   "date": "2026-08-27",
+   "time": "11:00",
+   "pax": 2,
+   "name": "Pernille Nielsen",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGX7NBMKN2B",
+    "SEA-T135340461",
+    "GET-95347131"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Shared Ferry Boat Tour to Mykines",
+   "date": "2026-08-27",
+   "time": "11:15",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYGLMRR55ZXM",
+    "SEA-T142339512",
+    "GET-100836626"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-28",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GTF-149596"
+   ],
+   "channel": "Guide to Faroe Islands",
+   "name": "Shabtai Gover",
+   "tour": "Unique 1.5 Hour Boat Tour to Drangarnir",
+   "date": "2026-08-28",
+   "time": "11:00",
+   "pax": 0,
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGBLHMRKARN",
+    "SEA-T132620238",
+    "GET-93189089"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Shared Ferry Boat Tour to Mykines",
+   "date": "2026-08-28",
+   "time": "11:15",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYGKBF6W2FL7",
+    "SEA-T143172761",
+    "GET-101484243"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-08-28",
+   "time": "13:00",
+   "pax": 2,
+   "name": "Brandy Sande",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "SEA-T142645176",
+    "SEA-101073805"
+   ],
+   "channel": "seatravel.fo",
+   "tour": "Private Sightseeing Tour with Local Skipper",
+   "date": "2026-08-28",
+   "time": "15:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGG45MBA39H",
+    "SEA-T142327361",
+    "GET-100827177"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Puffin Safari Boat Tour",
+   "date": "2026-08-30",
+   "time": "09:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "1437909621",
+    "SEA-T142696752",
+    "VIA-101112169"
+   ],
+   "channel": "Viator",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-09-01",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "1437920901",
+    "SEA-T142700343",
+    "VIA-101115032"
+   ],
+   "channel": "Viator",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-09-01",
+   "time": "13:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGBLHGKXMV4",
+    "SEA-T142370850",
+    "GET-100861211"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-09-04",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGRFQKRXQRG",
+    "SEA-T140353697",
+    "GET-99266917"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-09-06",
+   "time": "13:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": true
+  },
+  {
+   "codes": [
+    "GYG6H75L26MQ",
+    "SEA-T143146581",
+    "GET-101463744"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-09-11",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "1437045235",
+    "SEA-T142370661",
+    "VIA-100861058"
+   ],
+   "channel": "Viator",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-09-11",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGG45L368HK",
+    "SEA-T142939321",
+    "GET-101301815"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Exclusive 1,5 Hour Drangarnir Boat Tour",
+   "date": "2026-09-12",
+   "time": "11:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  },
+  {
+   "codes": [
+    "GYGVN24BY43Z",
+    "SEA-T143035581",
+    "GET-101376563"
+   ],
+   "channel": "GetYourGuide",
+   "tour": "Private Sightseeing Tour with Local Skipper",
+   "date": "2026-09-18",
+   "time": "15:00",
+   "pax": 0,
+   "name": "",
+   "cancelled": false
+  }
+ ]
+}
