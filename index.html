@@ -360,9 +360,7 @@ $('startScan').onclick=startScan; $('stopScan').onclick=stopScan;
 $('openSettings').onclick=()=>$('sheet').classList.add('show');
 $('closeSheet').onclick=()=>$('sheet').classList.remove('show');
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))$('sheet').classList.remove('show');});
-function loadFeed(url){
-  if(!FEED_URL) return fetch(url,{cache:'no-store'}).then(r=>{ if(!r.ok)throw new Error(r.status); return r.json(); });
-  // Apps Script: load as JSONP via <script> — avoids Safari's "Load failed" on the cross-origin redirect
+function jsonp(url){
   return new Promise((res,rej)=>{
     const cb='feed_'+Date.now(); const sc=document.createElement('script');
     window[cb]=d=>{ delete window[cb]; sc.remove(); res(d); };
@@ -371,6 +369,15 @@ function loadFeed(url){
     document.head.appendChild(sc);
     setTimeout(()=>{ if(window[cb]){ delete window[cb]; sc.remove(); rej(new Error('timeout')); } },20000);
   });
+}
+async function loadFeed(url){
+  const bust=url+(url.includes('?')?'&':'?')+'t='+Date.now();
+  // plain fetch, no cache option: extra headers would trigger a CORS preflight that Apps Script can't answer
+  try{ const r=await fetch(bust); if(!r.ok)throw new Error('HTTP '+r.status); return await r.json(); }
+  catch(e1){
+    if(!FEED_URL) throw e1;
+    try{ return await jsonp(url); }catch(e2){ throw new Error(e1.message+' / '+e2.message); }
+  }
 }
 async function sync(){
   const url=FEED_URL||'bookings.json';
