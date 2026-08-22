@@ -360,16 +360,27 @@ $('startScan').onclick=startScan; $('stopScan').onclick=stopScan;
 $('openSettings').onclick=()=>$('sheet').classList.add('show');
 $('closeSheet').onclick=()=>$('sheet').classList.remove('show');
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))$('sheet').classList.remove('show');});
+function loadFeed(url){
+  if(!FEED_URL) return fetch(url,{cache:'no-store'}).then(r=>{ if(!r.ok)throw new Error(r.status); return r.json(); });
+  // Apps Script: load as JSONP via <script> — avoids Safari's "Load failed" on the cross-origin redirect
+  return new Promise((res,rej)=>{
+    const cb='feed_'+Date.now(); const sc=document.createElement('script');
+    window[cb]=d=>{ delete window[cb]; sc.remove(); res(d); };
+    sc.onerror=()=>{ delete window[cb]; sc.remove(); rej(new Error('script load failed')); };
+    sc.src=url+(url.includes('?')?'&':'?')+'callback='+cb+'&t='+Date.now();
+    document.head.appendChild(sc);
+    setTimeout(()=>{ if(window[cb]){ delete window[cb]; sc.remove(); rej(new Error('timeout')); } },20000);
+  });
+}
 async function sync(){
   const url=FEED_URL||'bookings.json';
   $('lastSync').textContent='syncing…';
   try{
-    const r=await fetch(url,{cache:'no-store'}); if(!r.ok)throw new Error(r.status);
-    const d=await r.json(); const n=addBookings(d.bookings||[]);
+    const d=await loadFeed(url); const n=addBookings(d.bookings||[]);
     const gen=d.generated?new Date(d.generated):null;
     $('lastSync').textContent='inbox as of '+(gen?gen.toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'?');
     $('syncStat').textContent=`${(d.bookings||[]).length} bookings in feed, ${n} new here.`;
-  }catch(e){ $('lastSync').textContent='sync failed'; $('syncStat').textContent='Could not load '+url+' ('+e.message+'). Is the file next to this page, or is FEED_URL set?'; }
+  }catch(e){ $('lastSync').textContent='sync failed'; $('syncStat').textContent='Could not load '+url+' ('+e.message+').'; }
 }
 $('doSync').onclick=sync;
 sync();
