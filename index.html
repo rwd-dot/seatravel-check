@@ -6,7 +6,7 @@
 <title>Seatravel · Booking check</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
 <style>
   :root{
     --sea:#0B2A3F; --deep:#071C2B; --foam:#F2F6F8; --mist:#C9D6DE; --rope:#8FA3B0;
@@ -32,8 +32,7 @@
   .scan{position:relative;margin:6px 18px 0;border-radius:18px;overflow:hidden;background:var(--deep);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
   .scan video{width:100%;height:100%;object-fit:cover;display:none}
   .scan.live video{display:block}
-  .scan canvas{display:none}
-  .reticle{position:absolute;inset:14%;border-radius:12px;pointer-events:none}
+    .reticle{position:absolute;inset:14%;border-radius:12px;pointer-events:none}
   .reticle::before,.reticle::after,.reticle i::before,.reticle i::after{content:"";position:absolute;width:34px;height:34px;border:4px solid var(--flag)}
   .reticle::before{top:0;left:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
   .reticle::after{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
@@ -117,11 +116,10 @@
 
   <section class="scan" id="scanBox">
     <video id="video" playsinline muted></video>
-    <canvas id="canvas"></canvas>
-    <div class="reticle"><i></i></div>
+        <div class="reticle"><i></i></div>
     <div class="beam"></div>
     <div class="scan-idle" id="scanIdle">
-      <p>Point the camera at the QR code on the guest's voucher — GetYourGuide, Viator, Bókun, hiking.fo and PDF tickets all work.</p>
+      <p>Point the camera at the QR code or barcode on the guest's voucher — GetYourGuide, Viator, Bókun, hiking.fo and PDF tickets all work.</p>
       <button class="btn-flag" id="startScan">Start camera</button>
     </div>
     <button class="stop" id="stopScan">Stop camera</button>
@@ -294,27 +292,38 @@ function check(raw){
 }
 $('check').onclick=()=>{const v=$('manual').value.trim(); if(v){check(v);$('manual').value='';}};
 $('manual').addEventListener('keydown',e=>{if(e.key==='Enter')$('check').click();});
-const closeVerdict=()=>{$('verdict').classList.remove('show'); lastCode='';};
+const closeVerdict=()=>{$('verdict').classList.remove('show');};
 $('vClose').onclick=closeVerdict; $('vNext').onclick=()=>{closeVerdict(); if(!scanning)$('manual').focus();};
 
-/* ================= camera + QR ================= */
-let scanning=false,stream=null,lastCode='';
-const video=$('video'),canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+/* ================= camera: QR + 1D barcodes (Code 128/39, EAN, ITF, DataMatrix, PDF417) ================= */
+let scanning=false,stream=null,lastCode='',lastAt=0,detector=null,zx=null;
+const video=$('video');
+const FORMATS=['qr_code','code_128','code_39','ean_13','ean_8','itf','data_matrix','pdf417','aztec'];
+function onHit(text){ const now=Date.now(); if(!text||(text===lastCode&&now-lastAt<4000))return; lastCode=text; lastAt=now; if(!$('verdict').classList.contains('show'))check(text); }
 async function startScan(){
-  try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); video.srcObject=stream; await video.play();
-    scanning=true; $('scanBox').classList.add('live'); $('scanIdle').style.display='none'; requestAnimationFrame(tick);
-  }catch(e){ $('scanIdle').querySelector('p').textContent='Camera not available here (needs HTTPS + permission). Type the number below instead.'; }
+  try{
+    scanning=true; $('scanBox').classList.add('live'); $('scanIdle').style.display='none';
+    if('BarcodeDetector' in window){                      // native (Chrome/Android, newer Safari)
+      const sup=await BarcodeDetector.getSupportedFormats();
+      detector=new BarcodeDetector({formats:FORMATS.filter(f=>sup.includes(f))});
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      video.srcObject=stream; await video.play(); nativeTick();
+    } else {                                               // ZXing fallback (iOS Safari etc.)
+      const H=ZXing; const hints=new Map(); hints.set(H.DecodeHintType.POSSIBLE_FORMATS,[H.BarcodeFormat.QR_CODE,H.BarcodeFormat.CODE_128,H.BarcodeFormat.CODE_39,H.BarcodeFormat.EAN_13,H.BarcodeFormat.EAN_8,H.BarcodeFormat.ITF,H.BarcodeFormat.DATA_MATRIX,H.BarcodeFormat.PDF_417,H.BarcodeFormat.AZTEC]);
+      hints.set(H.DecodeHintType.TRY_HARDER,true);
+      zx=new H.BrowserMultiFormatReader(hints,300);
+      await zx.decodeFromConstraints({video:{facingMode:'environment'}},video,(res)=>{ if(res)onHit(res.getText()); });
+    }
+  }catch(e){ stopScan(); $('scanIdle').querySelector('p').textContent='Camera not available (needs HTTPS + permission). Type the number below instead.'; }
 }
-function stopScan(){scanning=false; if(stream)stream.getTracks().forEach(t=>t.stop()); $('scanBox').classList.remove('live'); $('scanIdle').style.display='block';}
-function tick(){
+async function nativeTick(){
   if(!scanning)return;
-  if(video.readyState===video.HAVE_ENOUGH_DATA&&!$('verdict').classList.contains('show')){
-    canvas.width=video.videoWidth; canvas.height=video.videoHeight; ctx.drawImage(video,0,0);
-    const img=ctx.getImageData(0,0,canvas.width,canvas.height);
-    const q=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
-    if(q&&q.data&&q.data!==lastCode){lastCode=q.data; check(q.data);}
-  }
-  requestAnimationFrame(tick);
+  if(video.readyState===video.HAVE_ENOUGH_DATA){ try{ const r=await detector.detect(video); if(r.length)onHit(r[0].rawValue); }catch(e){} }
+  setTimeout(nativeTick,200);
+}
+function stopScan(){
+  scanning=false; if(zx){zx.reset();zx=null;} if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  $('scanBox').classList.remove('live'); $('scanIdle').style.display='block';
 }
 $('startScan').onclick=startScan; $('stopScan').onclick=stopScan;
 
@@ -369,8 +378,7 @@ render();
   .scan{position:relative;margin:6px 18px 0;border-radius:18px;overflow:hidden;background:var(--deep);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
   .scan video{width:100%;height:100%;object-fit:cover;display:none}
   .scan.live video{display:block}
-  .scan canvas{display:none}
-  .reticle{position:absolute;inset:14%;border-radius:12px;pointer-events:none}
+    .reticle{position:absolute;inset:14%;border-radius:12px;pointer-events:none}
   .reticle::before,.reticle::after,.reticle i::before,.reticle i::after{content:"";position:absolute;width:34px;height:34px;border:4px solid var(--flag)}
   .reticle::before{top:0;left:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
   .reticle::after{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
@@ -454,11 +462,10 @@ render();
 
   <section class="scan" id="scanBox">
     <video id="video" playsinline muted></video>
-    <canvas id="canvas"></canvas>
-    <div class="reticle"><i></i></div>
+        <div class="reticle"><i></i></div>
     <div class="beam"></div>
     <div class="scan-idle" id="scanIdle">
-      <p>Point the camera at the QR code on the guest's voucher — GetYourGuide, Viator, Bókun, hiking.fo and PDF tickets all work.</p>
+      <p>Point the camera at the QR code or barcode on the guest's voucher — GetYourGuide, Viator, Bókun, hiking.fo and PDF tickets all work.</p>
       <button class="btn-flag" id="startScan">Start camera</button>
     </div>
     <button class="stop" id="stopScan">Stop camera</button>
