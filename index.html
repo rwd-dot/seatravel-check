@@ -9,7 +9,7 @@
 <script type="module">
   import { readBarcodes, prepareZXingModule } from "https://unpkg.com/zxing-wasm@2.1.2/dist/reader/index.js";
   prepareZXingModule({ fireImmediately: true });
-  window.zxRead = (img) => readBarcodes(img, { formats: ["QRCode","Code128","DataMatrix","PDF417","Aztec"], tryHarder: true, tryRotate: true, maxNumberOfSymbols: 1 });
+  window.zxRead = (img) => readBarcodes(img, { formats: ["QRCode","Code128","Code39","ITF","DataMatrix","PDF417","Aztec"], tryHarder: true, tryRotate: true, maxNumberOfSymbols: 1 });
 </script>
 <style>
   :root{
@@ -327,7 +327,7 @@ async function startScan(){
   try{
     scanning=true; $('scanBox').classList.add('live'); $('scanIdle').style.display='none';
     let sup=[]; try{ if('BarcodeDetector' in window) sup=await BarcodeDetector.getSupportedFormats(); }catch(e){}
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}});
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:2560},height:{ideal:1440},focusMode:'continuous',advanced:[{focusMode:'continuous'}]}});
     video.srcObject=stream; await video.play();
     if(sup.includes('code_128')&&sup.includes('qr_code')){
       detector=new BarcodeDetector({formats:FORMATS.filter(f=>sup.includes(f))}); $('engine').textContent='native scanner';
@@ -342,9 +342,19 @@ async function nativeTick(){
     try{
       if(detector){ const r=await detector.detect(video); if(r.length)onHit(r[0].rawValue); }
       else if(window.zxRead){
-        const W=Math.min(video.videoWidth,1280), H=Math.round(video.videoHeight*W/video.videoWidth);
+        // full native resolution — 1D barcodes need the bars sharp; downscaling loses them
+        const W=video.videoWidth, H=video.videoHeight;
         cv.width=W; cv.height=H; cx.drawImage(video,0,0,W,H);
-        const r=await window.zxRead(cx.getImageData(0,0,W,H)); if(r.length&&r[0].isValid)onHit(r[0].text);
+        let r=await window.zxRead(cx.getImageData(0,0,W,H));
+        if(!(r.length&&r[0].isValid)){
+          // second pass: centre horizontal band, magnified — where the barcode usually sits
+          const by=Math.round(H*0.30), bh=Math.round(H*0.40);
+          const bw=W, sc=Math.max(1,Math.round(1600/bw));
+          cv.width=bw*sc; cv.height=bh*sc; cx.imageSmoothingEnabled=false;
+          cx.drawImage(video,0,by,bw,bh,0,0,bw*sc,bh*sc);
+          r=await window.zxRead(cx.getImageData(0,0,bw*sc,bh*sc));
+        }
+        if(r.length&&r[0].isValid)onHit(r[0].text);
       }
     }catch(e){ console.warn(e); }
   }
