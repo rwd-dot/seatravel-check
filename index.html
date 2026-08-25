@@ -7,21 +7,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <script type="module">
-  import { readBarcodes, prepareZXingModule } from "https://unpkg.com/zxing-wasm@2.1.2/dist/reader/index.js";
-  // Pin the .wasm to the SAME cdn as the JS. The library's default points at a different CDN,
-  // and if that fetch fails the scanner throws silently on every frame ("camera won't read").
+  // esm.sh resolves the package export map and bundles the wasm URL correctly.
   try {
-    await prepareZXingModule({
-      overrides: { locateFile: (path, prefix) =>
-        path.endsWith(".wasm") ? "https://unpkg.com/zxing-wasm@2.1.2/dist/reader/zxing_reader.wasm" : prefix + path },
-      fireImmediately: true,
+    const { readBarcodes, prepareZXingModule } = await import("https://esm.sh/zxing-wasm@2.1.2/reader");
+    // don't block on wasm init; let it warm up in the background
+    prepareZXingModule({ fireImmediately: true }).then(() => { window.zxReady = true; })
+      .catch(e => { window.zxError = String(e); });
+    window.zxRead = (img) => readBarcodes(img, {
+      formats: ["QRCode","Code128","Code39","ITF","DataMatrix","PDF417","Aztec"],
+      tryHarder: true, tryRotate: true, tryInvert: true, tryDownscale: true, maxNumberOfSymbols: 1,
     });
-    window.zxReady = true;
   } catch (e) { window.zxError = String(e); }
-  window.zxRead = (img) => readBarcodes(img, {
-    formats: ["QRCode","Code128","Code39","ITF","DataMatrix","PDF417","Aztec"],
-    tryHarder: true, tryRotate: true, tryInvert: true, tryDownscale: true, maxNumberOfSymbols: 1,
-  });
 </script>
 <style>
   :root{
@@ -353,7 +349,7 @@ async function nativeTick(){
   if(video.readyState===video.HAVE_ENOUGH_DATA){
     try{
       if(detector){ const r=await detector.detect(video); if(r.length)onHit(r[0].rawValue); }
-      else if(window.zxRead){
+      else if(window.zxRead && !window.zxError){
         // full native resolution — 1D barcodes need the bars sharp; downscaling loses them
         const W=video.videoWidth, H=video.videoHeight;
         cv.width=W; cv.height=H; cx.drawImage(video,0,0,W,H);
