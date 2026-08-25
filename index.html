@@ -8,8 +8,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <script type="module">
   import { readBarcodes, prepareZXingModule } from "https://unpkg.com/zxing-wasm@2.1.2/dist/reader/index.js";
-  prepareZXingModule({ fireImmediately: true });
-  window.zxRead = (img) => readBarcodes(img, { formats: ["QRCode","Code128","Code39","ITF","DataMatrix","PDF417","Aztec"], tryHarder: true, tryRotate: true, maxNumberOfSymbols: 1 });
+  // Pin the .wasm to the SAME cdn as the JS. The library's default points at a different CDN,
+  // and if that fetch fails the scanner throws silently on every frame ("camera won't read").
+  try {
+    await prepareZXingModule({
+      overrides: { locateFile: (path, prefix) =>
+        path.endsWith(".wasm") ? "https://unpkg.com/zxing-wasm@2.1.2/dist/reader/zxing_reader.wasm" : prefix + path },
+      fireImmediately: true,
+    });
+    window.zxReady = true;
+  } catch (e) { window.zxError = String(e); }
+  window.zxRead = (img) => readBarcodes(img, {
+    formats: ["QRCode","Code128","Code39","ITF","DataMatrix","PDF417","Aztec"],
+    tryHarder: true, tryRotate: true, tryInvert: true, tryDownscale: true, maxNumberOfSymbols: 1,
+  });
 </script>
 <style>
   :root{
@@ -331,7 +343,7 @@ async function startScan(){
     video.srcObject=stream; await video.play();
     if(sup.includes('code_128')&&sup.includes('qr_code')){
       detector=new BarcodeDetector({formats:FORMATS.filter(f=>sup.includes(f))}); $('engine').textContent='native scanner';
-    } else { detector=null; $('engine').textContent='ZXing scanner'; }
+    } else { detector=null; $('engine').textContent = window.zxError ? ('scanner load failed: '+window.zxError) : (window.zxReady ? 'ZXing scanner' : 'loading scanner…'); }
     nativeTick();
   }catch(e){ stopScan(); $('scanIdle').querySelector('p').textContent='Camera not available ('+(e&&e.message||e)+'). Type the number below instead.'; }
 }
